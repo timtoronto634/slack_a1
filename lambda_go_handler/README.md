@@ -6,9 +6,9 @@ https://docs.aws.amazon.com/lambda/latest/dg/golang-package.html
 At the last step, you should run,
 
 ```
-aws lambda create-function --function-name myFunction \
+aws lambda create-function --function-name slackA1 \
 --runtime provided.al2023 --handler bootstrap \
 --architectures arm64 \
 --role arn:aws:iam::111122223333:role/lambda-ex \
---zip-file fileb://myFunction.zip
+--zip-file fileb://slackA1.zip
 ```

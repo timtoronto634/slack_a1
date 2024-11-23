@@ -1,9 +1,9 @@
-FUNCTION_NAME=myFunction
-ZIP_FILE_NAME=myFunction.zip
+FUNCTION_NAME=slackA1
+ZIP_FILE_NAME=slackA1.zip
 MAX_SIZE=5242880  # 5MB in bytes
 
 build:
-	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -o bootstrap main.go
+	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -o bootstrap .
 
 zip: build
 	zip $(ZIP_FILE_NAME) bootstrap
