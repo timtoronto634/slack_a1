@@ -1,10 +1,12 @@
-
+FUNCTION_NAME=myFunction
+ZIP_FILE_NAME=myFunction.zip
 
 build:
 	GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o bootstrap main.go
 
 zip: build
-	zip myFunction.zip bootstrap
+	zip $(ZIP_FILE_NAME) bootstrap
 
-deploy:
-	
+deploy: zip
+	aws lambda update-function-code --function-name $(FUNCTION_NAME) \
+--zip-file fileb://$(ZIP_FILE_NAME)
