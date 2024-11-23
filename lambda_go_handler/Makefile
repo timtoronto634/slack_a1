@@ -1,12 +1,20 @@
 FUNCTION_NAME=myFunction
 ZIP_FILE_NAME=myFunction.zip
+MAX_SIZE=5242880  # 5MB in bytes
 
 build:
-	GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o bootstrap main.go
+	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -o bootstrap main.go
 
 zip: build
 	zip $(ZIP_FILE_NAME) bootstrap
 
-deploy: zip
+check:
+	@file_size=$$(ls -l $(ZIP_FILE_NAME) | awk '{print $$5}'); \
+	if [ $$file_size -gt $(MAX_SIZE) ]; then \
+		echo "error: $(ZIP_FILE_NAME) is over 5MB ($$file_size)."; \
+		exit 1; \
+	fi
+
+deploy: zip check
 	aws lambda update-function-code --function-name $(FUNCTION_NAME) \
---zip-file fileb://$(ZIP_FILE_NAME)
+	--zip-file fileb://$(ZIP_FILE_NAME)
