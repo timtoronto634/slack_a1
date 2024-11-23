@@ -12,10 +12,11 @@ import (
 )
 
 // var api *slack.Client
+var webhookURL string
 
-// func init() {
-// 	api = slack.New("TOKEN")
-// }
+func init() {
+	// api = slack.New("TOKEN")
+}
 
 type RawRequest struct {
 	Body string `json:"body"`
@@ -23,7 +24,7 @@ type RawRequest struct {
 
 func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
 	// signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
-	fmt.Printf("Raw Event: %v\n", string(lambdaEvent)) // for debug
+	fmt.Printf("Raw lambdaEvent: %v\n", string(lambdaEvent)) // for debug
 	var rawRequest *RawRequest
 	err := json.Unmarshal(lambdaEvent, &rawRequest)
 	if err != nil {
@@ -47,6 +48,8 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 	switch eventsAPIEvent.Type {
 	case slackevents.URLVerification:
 		return handleURLVerification(slackEvent)
+	case slackevents.CallbackEvent:
+		return handleCallbackEvent(json.RawMessage(slackEvent))
 	default:
 		fmt.Println("no handler is implemented for this now.")
 	}
