@@ -47,6 +47,10 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 
 	fmt.Printf("recvEvent: %+v\n", recvEvent)
 	appMentionEvent := recvEvent.(*slackevents.AppMentionEvent)
+	if appMentionEvent.BotID != "" {
+		fmt.Println("bot message is ignored")
+		return events.LambdaFunctionURLResponse{StatusCode: 200}, nil
+	}
 
 	fmt.Printf("appMentionEvent: %+v\n", appMentionEvent)
 
@@ -58,6 +62,9 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 		fmt.Println("failed to get conversation replies")
 		return events.LambdaFunctionURLResponse{}, err
 	}
+
+	// ignore the latest message
+	messages = messages[:len(messages)-1]
 
 	msgs := Map(messages, func(m slack.Message, _ int) SingleMessage {
 		return SingleMessage{
