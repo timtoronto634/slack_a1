@@ -1,2 +1,2 @@
 # slack app
-this directory is for showing how to setup slack app
+you can use manifest.yml for quickstart
