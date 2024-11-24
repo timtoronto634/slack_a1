@@ -1,16 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"reflect"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
@@ -52,33 +49,6 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 
 	fmt.Printf("appMentionEvent: %+v\n", appMentionEvent)
 
-	webhookURL = os.Getenv("WEBHOOK_URL")
-	if webhookURL == "" {
-		fmt.Println("WEBHOOK_URL is not set")
-	}
-
-	data := map[string]string{
-		"text": "You said: " + appMentionEvent.Text,
-	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println("failed to marshal data")
-	}
-
-	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println("failed to post message to slack")
-		return events.LambdaFunctionURLResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("failed to read response body")
-		return events.LambdaFunctionURLResponse{}, err
-	}
-
-	fmt.Println("status:", resp.StatusCode)
-	fmt.Println("responseBody:", string(body))
+	api.PostMessage(appMentionEvent.Channel, slack.MsgOptionText("by app: "+appMentionEvent.Text, false))
 	return events.LambdaFunctionURLResponse{StatusCode: 200}, nil
 }

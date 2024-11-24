@@ -5,17 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
-// var api *slack.Client
-var webhookURL string
+var api *slack.Client
 
 func init() {
-	// api = slack.New("TOKEN")
+	token := os.Getenv("BOT_USER_OAUTH_TOKEN")
+	api = slack.New(token)
 }
 
 type RawRequest struct {
@@ -23,7 +25,6 @@ type RawRequest struct {
 }
 
 func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
-	// signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
 	fmt.Printf("Raw lambdaEvent: %v\n", string(lambdaEvent)) // for debug
 	var rawRequest *RawRequest
 	err := json.Unmarshal(lambdaEvent, &rawRequest)
