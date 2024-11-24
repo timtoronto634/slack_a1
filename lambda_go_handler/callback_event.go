@@ -35,6 +35,7 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 	err = json.Unmarshal(slackEvent, &eventsAPICallbackEvent)
 	if err != nil {
 		fmt.Println("failed to unmarshal event")
+		return events.LambdaFunctionURLResponse{}, err
 	}
 
 	appMentionType := reflect.TypeOf(slackevents.AppMentionEvent{})
@@ -42,7 +43,6 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 	err = json.Unmarshal(*eventsAPICallbackEvent.InnerEvent, recvEvent)
 	if err != nil {
 		fmt.Println("failed to unmarshal event")
-
 		return events.LambdaFunctionURLResponse{}, err
 	}
 

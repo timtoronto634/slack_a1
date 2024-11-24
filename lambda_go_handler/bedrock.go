@@ -40,7 +40,7 @@ Summarize the following Conversation while following the restrictions
 - The summarization must be within 200 words. 
 - The summarization must be in the same language as the conversation
 - The summarization must be completed.
-- The summarization immediately start without leading text 
+- The summarization immediately starts without leading text 
 
 ### conversion ###
 %s
