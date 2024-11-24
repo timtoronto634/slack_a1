@@ -1,6 +1,6 @@
 FUNCTION_NAME=slackA1
 ZIP_FILE_NAME=slackA1.zip
-MAX_SIZE=5242880  # 5MB in bytes
+MAX_SIZE=50000000  # 50MB in bytes
 
 build:
 	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -o bootstrap .
