@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -58,12 +59,17 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 		return events.LambdaFunctionURLResponse{}, err
 	}
 
-	msgs := Map(messages, func(m slack.Message, _ int) string {
-		return m.Text
+	msgs := Map(messages, func(m slack.Message, _ int) SingleMessage {
+		return SingleMessage{
+			Sender: m.User,
+			Text:   m.Text,
+		}
 	})
 
 	fmt.Printf("messages: %+v\n", msgs)
 
-	api.PostMessage(appMentionEvent.Channel, slack.MsgOptionText(fmt.Sprintf("number of messages in the thread: %d", len(messages)), false))
+	result := summarizeConversation(msgs)
+
+	api.PostMessageContext(context.Background(), appMentionEvent.Channel, slack.MsgOptionText(result, false), slack.MsgOptionTS(appMentionEvent.ThreadTimeStamp))
 	return events.LambdaFunctionURLResponse{StatusCode: 200}, nil
 }

@@ -9,15 +9,31 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
+const (
+	modelID = "anthropic.claude-instant-v1"
+	region  = "ap-northeast-1"
+)
+
 var api *slack.Client
+var client *bedrockruntime.Client
 
 func init() {
 	token := os.Getenv("BOT_USER_OAUTH_TOKEN")
 	api = slack.New(token)
+
+	// Load AWS configuration
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		fmt.Printf("Error loading AWS configuration: %v\n", err)
+		return
+	}
+	client = bedrockruntime.NewFromConfig(cfg)
 }
 
 type RawRequest struct {
