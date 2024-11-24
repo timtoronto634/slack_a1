@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/samber/lo"
 )
 
 type SingleMessage struct {
@@ -28,7 +29,7 @@ type AnthropicResponse struct {
 }
 
 func summarizeConversation(messages []SingleMessage) string {
-	conversation := Map(messages, func(m SingleMessage, _ int) string {
+	conversation := lo.Map(messages, func(m SingleMessage, _ int) string {
 		return fmt.Sprintf("%s: %s\n", m.Sender, m.Text)
 	})
 

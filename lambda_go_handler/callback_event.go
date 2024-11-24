@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/samber/lo"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -66,7 +67,7 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 	// ignore the latest message
 	messages = messages[:len(messages)-1]
 
-	msgs := Map(messages, func(m slack.Message, _ int) SingleMessage {
+	msgs := lo.Map(messages, func(m slack.Message, _ int) SingleMessage {
 		return SingleMessage{
 			Sender: m.User,
 			Text:   m.Text,
