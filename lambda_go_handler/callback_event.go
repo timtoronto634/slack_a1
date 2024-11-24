@@ -7,7 +7,6 @@ import (
 	"reflect"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/samber/lo"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -59,7 +58,7 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 		return events.LambdaFunctionURLResponse{}, err
 	}
 
-	msgs := lo.Map(messages, func(m slack.Message, _ int) string {
+	msgs := Map(messages, func(m slack.Message, _ int) string {
 		return m.Text
 	})
 
