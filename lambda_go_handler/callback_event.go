@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/samber/lo"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -49,6 +50,21 @@ func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLRe
 
 	fmt.Printf("appMentionEvent: %+v\n", appMentionEvent)
 
-	api.PostMessage(appMentionEvent.Channel, slack.MsgOptionText("by app: "+appMentionEvent.Text, false))
+	messages, _, _, err := api.GetConversationReplies(&slack.GetConversationRepliesParameters{
+		ChannelID: appMentionEvent.Channel,
+		Timestamp: appMentionEvent.ThreadTimeStamp,
+	})
+	if err != nil {
+		fmt.Println("failed to get conversation replies")
+		return events.LambdaFunctionURLResponse{}, err
+	}
+
+	msgs := lo.Map(messages, func(m slack.Message, _ int) string {
+		return m.Text
+	})
+
+	fmt.Printf("messages: %+v\n", msgs)
+
+	api.PostMessage(appMentionEvent.Channel, slack.MsgOptionText(fmt.Sprintf("number of messages in the thread: %d", len(messages)), false))
 	return events.LambdaFunctionURLResponse{StatusCode: 200}, nil
 }

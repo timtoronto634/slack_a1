@@ -7,4 +7,8 @@ require (
 	github.com/slack-go/slack v0.15.0
 )
 
-require github.com/gorilla/websocket v1.4.2 // indirect
+require (
+	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/samber/lo v1.47.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
+)
