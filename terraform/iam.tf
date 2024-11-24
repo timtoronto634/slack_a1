@@ -40,6 +40,13 @@ resource "aws_iam_role_policy" "bedrock_call_policy" {
         ]
         Effect   = "Allow"
         Resource = ["arn:aws:logs:ap-northeast-1:*"]
+      },
+      {
+        Action = [
+          "bedrock:InvokeModel"
+        ]
+        Effect   = "Allow"
+        Resource = ["*"]
       }
     ]
   })
