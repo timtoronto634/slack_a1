@@ -36,8 +36,14 @@ func init() {
 	client = bedrockruntime.NewFromConfig(cfg)
 }
 
+type Headers struct {
+	RetryNum    string `json:"x-slack-retry-num"`
+	RetryReason string `json:"x-slack-retry-reason"`
+}
+
 type RawRequest struct {
-	Body string `json:"body"`
+	Body    string  `json:"body"`
+	Headers Headers `json:"headers"`
 }
 
 func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
@@ -47,6 +53,15 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 	if err != nil {
 		fmt.Println("failed to unmarshal event")
 		return events.LambdaFunctionURLResponse{}, errors.New("failed to unmarshal event")
+	}
+
+	/**
+	 * This is temporal workaround to avoid duplicated message handling.
+	 * map can cause data race and panic, so it should be replaced with a proper solution
+	 */
+	if (rawRequest.Headers.RetryNum == "1" || rawRequest.Headers.RetryNum == "2") && rawRequest.Headers.RetryReason == "http_timeout" {
+		fmt.Println("retry request is ignored")
+		return events.LambdaFunctionURLResponse{StatusCode: 200}, nil
 	}
 
 	var slackEvent = []byte(rawRequest.Body)
