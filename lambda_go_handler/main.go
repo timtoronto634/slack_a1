@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -22,6 +27,7 @@ const (
 
 var api *slack.Client
 var client *bedrockruntime.Client
+var slackSigningSecret string
 
 func init() {
 	token := os.Getenv("BOT_USER_OAUTH_TOKEN")
@@ -34,16 +40,38 @@ func init() {
 		return
 	}
 	client = bedrockruntime.NewFromConfig(cfg)
+
+	slackSigningSecret = os.Getenv("SLACK_SIGNING_SECRET")
 }
 
 type Headers struct {
-	RetryNum    string `json:"x-slack-retry-num"`
-	RetryReason string `json:"x-slack-retry-reason"`
+	RetryNum         string `json:"x-slack-retry-num"`
+	RetryReason      string `json:"x-slack-retry-reason"`
+	RequestTimestamp string `json:"x-slack-request-timestamp"`
+	Signature        string `json:"x-slack-signature"`
 }
 
 type RawRequest struct {
 	Body    string  `json:"body"`
 	Headers Headers `json:"headers"`
+}
+
+func verifySignature(req *RawRequest) (bool, error) {
+
+	// Check if the request timestamp is recent
+	ts, err := strconv.ParseInt(req.Headers.RequestTimestamp, 10, 64)
+	if err != nil || time.Now().Unix()-ts > 300 {
+		return false, errors.New("forbidden")
+	}
+
+	sigBasestring := "v0:" + req.Headers.RequestTimestamp + ":" + req.Body
+
+	mac := hmac.New(sha256.New, []byte(slackSigningSecret))
+	mac.Write([]byte(sigBasestring))
+	expectedSignature := "v0=" + hex.EncodeToString(mac.Sum(nil))
+
+	slackSignature := req.Headers.Signature
+	return hmac.Equal([]byte(expectedSignature), []byte(slackSignature)), nil
 }
 
 func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
@@ -54,6 +82,18 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 		fmt.Println("failed to unmarshal event")
 		return events.LambdaFunctionURLResponse{}, errors.New("failed to unmarshal event")
 	}
+
+	verified, err := verifySignature(rawRequest)
+	if err != nil {
+		fmt.Println("failed to verify signature")
+		return events.LambdaFunctionURLResponse{}, errors.New("failed to verify signature")
+	}
+	if !verified {
+		fmt.Println("signature is invalid")
+		return events.LambdaFunctionURLResponse{}, errors.New("signature is invalid")
+	}
+
+	fmt.Println("signature is valid")
 
 	/**
 	 * This is temporal workaround to avoid duplicated message handling.
