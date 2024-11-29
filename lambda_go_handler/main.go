@@ -83,18 +83,6 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 		return events.LambdaFunctionURLResponse{}, errors.New("failed to unmarshal event")
 	}
 
-	verified, err := verifySignature(rawRequest)
-	if err != nil {
-		fmt.Println("failed to verify signature")
-		return events.LambdaFunctionURLResponse{}, errors.New("failed to verify signature")
-	}
-	if !verified {
-		fmt.Println("signature is invalid")
-		return events.LambdaFunctionURLResponse{}, errors.New("signature is invalid")
-	}
-
-	fmt.Println("signature is valid")
-
 	/**
 	 * This is temporal workaround to avoid duplicated message handling.
 	 * map can cause data race and panic, so it should be replaced with a proper solution
@@ -121,6 +109,16 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 	case slackevents.URLVerification:
 		return handleURLVerification(slackEvent)
 	case slackevents.CallbackEvent:
+		verified, err := verifySignature(rawRequest)
+		if err != nil {
+			fmt.Println("failed to verify signature")
+			return events.LambdaFunctionURLResponse{}, errors.New("failed to verify signature")
+		}
+		if !verified {
+			fmt.Println("signature is invalid")
+			return events.LambdaFunctionURLResponse{}, errors.New("signature is invalid")
+		}
+		fmt.Println("signature is valid")
 		return handleCallbackEvent(json.RawMessage(slackEvent))
 	default:
 		fmt.Println("no handler is implemented for this now.")
