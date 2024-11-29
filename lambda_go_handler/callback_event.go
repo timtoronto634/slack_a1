@@ -14,17 +14,17 @@ import (
 )
 
 func handleCallbackEvent(slackEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
-	fmt.Printf("Raw Event: %v\n", string(slackEvent)) // for debug
+	// fmt.Printf("Raw Event: %v\n", string(slackEvent)) // for debug
 
 	eventsAPIEvent, err := slackevents.ParseEvent(
 		json.RawMessage(slackEvent),
-		slackevents.OptionNoVerifyToken(), // for debug
+		// slackevents.OptionNoVerifyToken(), // for debug
 	)
 	if err != nil {
 		fmt.Println("failed to parse event")
 		return events.LambdaFunctionURLResponse{}, errors.New("failed to parse event")
 	}
-	fmt.Printf("Parsed eventsAPIEvent: %+v\n", eventsAPIEvent) // for debug
+	// fmt.Printf("Parsed eventsAPIEvent: %+v\n", eventsAPIEvent) // for debug
 
 	if eventsAPIEvent.InnerEvent.Type != string(slackevents.AppMention) {
 		fmt.Printf("only mention is handled. event type: %s\n", eventsAPIEvent.InnerEvent.Type)

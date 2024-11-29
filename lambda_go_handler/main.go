@@ -75,7 +75,7 @@ func verifySignature(req *RawRequest) (bool, error) {
 }
 
 func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.LambdaFunctionURLResponse, error) {
-	fmt.Printf("Raw lambdaEvent: %v\n", string(lambdaEvent)) // for debug
+	// fmt.Printf("Raw lambdaEvent: %v\n", string(lambdaEvent)) // for debug
 	var rawRequest *RawRequest
 	err := json.Unmarshal(lambdaEvent, &rawRequest)
 	if err != nil {
@@ -96,14 +96,14 @@ func handleRequest(ctx context.Context, lambdaEvent json.RawMessage) (events.Lam
 
 	eventsAPIEvent, err := slackevents.ParseEvent(
 		json.RawMessage(slackEvent),
-		slackevents.OptionNoVerifyToken(), // for debug
+		// slackevents.OptionNoVerifyToken(), // for debug
 	)
 	if err != nil {
 		fmt.Println("failed to parse event")
 		return events.LambdaFunctionURLResponse{}, errors.New("failed to parse event")
 	}
 
-	fmt.Printf("Parsed Event: %+v\n", eventsAPIEvent) // for debug
+	// fmt.Printf("Parsed Event: %+v\n", eventsAPIEvent) // for debug
 
 	switch eventsAPIEvent.Type {
 	case slackevents.URLVerification:
